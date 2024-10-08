@@ -183,39 +183,67 @@
         </div>
     </div>
 
-    <script>
-        const sound = new Howl({
-            src: ['./what_you_know_TI.mp3'], // Replace with actual audio file
-            loop: true,
-            volume: 0.7,
-            html5: true,
-            autoplay: true
-        });
+<script>
+    let sound;
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const volumeSlider = document.querySelector('.volume-slider');
+    let isPlaying = false;
 
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const volumeSlider = document.querySelector('.volume-slider');
-        let isPlaying = true;
+    function initAudio() {
+        if (!sound) {
+            sound = new Howl({
+                src: ['https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.js'], // Replace with actual audio file URL
+                loop: true,
+                volume: 0.7,
+                html5: true,
+                onplayerror: function() {
+                    sound.once('unlock', function() {
+                        sound.play();
+                    });
+                }
+            });
+        }
+    }
 
-        playPauseBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                sound.pause();
-                playPauseBtn.textContent = '▶️';
-            } else {
-                sound.play();
-                playPauseBtn.textContent = '⏸️';
-            }
-            isPlaying = !isPlaying;
-        });
-
-        volumeSlider.addEventListener('input', (e) => {
-            const volume = e.target.value / 100;
-            sound.volume(volume);
-        });
-
-        window.addEventListener('load', () => {
+    function playAudio() {
+        if (sound && !isPlaying) {
             sound.play();
             playPauseBtn.textContent = '⏸️';
-        });
-    </script>
+            isPlaying = true;
+        }
+    }
+
+    // Try to initialize and play audio immediately
+    initAudio();
+    playAudio();
+
+    // Fallback: Play audio on first user interaction if it hasn't started yet
+    document.body.addEventListener('click', function() {
+        if (!isPlaying) {
+            initAudio();
+            playAudio();
+        }
+    }, { once: true });
+
+    playPauseBtn.addEventListener('click', () => {
+        if (!sound) initAudio();
+        
+        if (isPlaying) {
+            sound.pause();
+            playPauseBtn.textContent = '▶️';
+        } else {
+            sound.play();
+            playPauseBtn.textContent = '⏸️';
+        }
+        isPlaying = !isPlaying;
+    });
+
+    volumeSlider.addEventListener('input', (e) => {
+        if (sound) {
+            const volume = e.target.value / 100;
+            sound.volume(volume);
+        }
+    });
+</script>
 </body>
 </html>
